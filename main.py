@@ -1,17 +1,9 @@
 import pygame
-from characters import Cat, Dog
-
-def check_collisions(dog, cats):
-    for bark in dog.barks:
-        if bark.active:
-            for cat in cats:
-                # Simple collision detection: Check if bark and cat overlap
-                if (cat.x < bark.x < cat.x + cat.width) and (cat.y < bark.y < cat.y + cat.height):
-                    cat.active = False  # Mark the cat as inactive
-                    bark.active = False  # Deactivate bark after hitting a cat
-
-    # Filter out inactive cats
-    return [cat for cat in cats if cat.active]
+import math
+import time
+import numpy as np
+from events import check_collisions
+from characters import Dog, Cat
 
 def main():
     pygame.init()
@@ -21,13 +13,24 @@ def main():
     pygame.display.set_caption('Morty & Rick: Cat Disaster')
 
     dog = Dog(320, 440, 4, (255, 0, 0))
-    cats = []  # Start with no cats on the screen
-    cat_spawn_interval = 200  # Number of frames between each new cat spawn
-    cat_timer = cat_spawn_interval  # Initialize timer to spawn the first cat immediately
+    cats = []
+    cat_spawn_interval = 200
+    cat_timer = 20
+
+    global_cat_speed = 1  # Initial speed for all cats
+    max_cat_speed = 7.5
+    last_speed_increase_time = pygame.time.get_ticks()
+    speed_increase_interval = 10000  # in milliseconds
 
     clock = pygame.time.Clock()
     running = True
     while running:
+        current_time = pygame.time.get_ticks()
+        if current_time - last_speed_increase_time > speed_increase_interval:
+            if global_cat_speed < max_cat_speed:
+                global_cat_speed += math.log(global_cat_speed + 1)
+            last_speed_increase_time = current_time
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -40,24 +43,22 @@ def main():
         if keys[pygame.K_SPACE]:
             dog.bark()
 
-        dog.update_barks(screen_height)  # Update to handle barks moving up
+        dog.update_barks()
         cats = check_collisions(dog, cats)
 
-        # Cat spawning logic
-        if cat_timer <= 0:
-            cats.append(Cat(screen_width - 20, 0, 1, (0, 0, 255)))  # Spawn new cat at the right upper corner
-            cat_timer = cat_spawn_interval  # Reset timer
-        else:
-            cat_timer -= 1  # Decrement timer each frame
-
         for cat in cats:
-            cat.descend(screen_width, screen_height)
+            cat.descend(global_cat_speed, screen_width, screen_height)
+
+        if cat_timer <= 0:
+            cats.append(Cat(screen_width - 20, 0, (0, 0, 255), global_cat_speed))
+            cat_timer = cat_spawn_interval + np.random.normal(0, 60)
+        else:
+            cat_timer -= 1
 
         screen.fill((0, 0, 0))
         dog.draw(screen)
         for cat in cats:
             cat.draw(screen)
-
         pygame.display.flip()
         clock.tick(50)
 
