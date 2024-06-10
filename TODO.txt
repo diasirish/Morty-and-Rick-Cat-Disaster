@@ -1,0 +1,8 @@
+Stuff I need to implement
+
+GAMEPLAY:
+1. Position the boss correctly.
+2. Incerase the speed of a bark (it is too slow for the fast cats).
+3. Add randomness in the intial positions of the cats in the game
+
+DESIGN:

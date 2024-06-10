@@ -2,7 +2,7 @@ import pygame
 import math
 import time
 import numpy as np
-from events import check_collisions, boss_exists, boss_is_dead
+from events import check_collisions, boss_exists
 from characters import Dog, Cat, Food, BossCat
 
 def main():

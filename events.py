@@ -22,9 +22,3 @@ def boss_exists(cats):
         if isinstance(cat, BossCat) and cat.active:
             return True
     return False
-
-def boss_is_dead(cats):
-    for cat in cats:
-        if isinstance(cat, BossCat):
-            boss_is_dead = not cat.active
-            return boss_is_dead
