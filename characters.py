@@ -35,12 +35,25 @@ class Bark:
             for px, py in self.projectiles:
                 pygame.draw.circle(screen, (255, 255, 0), (px, py), 5)
 
+class Food:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.width = 20
+        self.height = 20
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, (100, 255, 100), (self.x, self.y, self.width, self.height))
+
+
 class Dog(Character):
     def __init__(self, x, y, speed, color):
         super().__init__(x, y, speed, color)
         self.barks = []
         self.bark_cooldown = 350  # Cooldown in milliseconds (1.5 seconds)
         self.last_bark_time = pygame.time.get_ticks() - self.bark_cooldown  # Initialize to allow immediate bark
+        self.cats_destroyed = 0
+        self.destroyed_boss = False
 
     def bark(self):
         current_time = pygame.time.get_ticks()
@@ -68,6 +81,8 @@ class Cat(Character):
         self.active = True
         self.direction = 'left'
         self.vertical_move = 50
+        self.enlarged = False
+
 
     def descend(self, global_speed, screen_width, screen_height):
         if not self.active:
@@ -85,10 +100,35 @@ class Cat(Character):
             else:
                 self.y += self.vertical_move
                 self.direction = 'left'
-        
+
+        if self.enlarged and self.y > screen_height * 3 / 4:
+            self.active = True  # Allows enlarged cats to go lower
+                    
         if self.y > screen_height * 3 / 4:
-            self.active = False
+            if self.enlarged:
+                self.active = True
+            else:
+                self.active = False
 
     def draw(self, screen):
         if self.active:
             super().draw(screen)
+
+    def check_food(self, food):
+        if not self.enlarged and self.x < food.x + food.width and self.x + self.width > food.x and self.y < food.y + food.height and self.y + self.height > food.y:
+            self.enlarged = True
+            self.width *= 2
+            self.height *= 2
+
+
+class BossCat(Cat):
+    def __init__(self, x, y, color, speed, health):
+        super().__init__(x, y, color, speed)
+        self.health = health
+        # self.width = x*2
+        # self.height = y*2
+
+    def hit_by_bark(self):
+        self.health -= 1
+        if self.health <= 0:
+            self.active = False

@@ -2,38 +2,45 @@ import pygame
 import math
 import time
 import numpy as np
-from events import check_collisions
-from characters import Dog, Cat
+from events import check_collisions, boss_exists, boss_is_dead
+from characters import Dog, Cat, Food, BossCat
 
 def main():
     pygame.init()
-    screen_width = 640
-    screen_height = 480
-    screen = pygame.display.set_mode((screen_width, screen_height))
+    SCREEN_WIDTH = 640
+    SCREEN_HEIGHT = 480
+
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Morty & Rick: Cat Disaster')
 
-    dog = Dog(320, 440, 4, (255, 0, 0))
+    dog = Dog(320, 400, 4, (255, 0, 0))
     cats = []
-    cat_spawn_interval = 200
-    cat_timer = 20
+    food = Food(580, 350)
 
-    global_cat_speed = 1  # Initial speed for all cats
-    max_cat_speed = 7.5
-    last_speed_increase_time = pygame.time.get_ticks()
-    speed_increase_interval = 10000  # in milliseconds
+    CAT_SPAWN_INTERVAL = 200
+    CAT_TIMER = 20
+    CATS_BEFORE_BOSS = 15
+    GLOBAL_CAT_SPEED = 1  # Initial speed for all cats
+    MAX_CAT_SPEED = 7.5
+    BOSS_CAT_SPEED = 5
+    BOSS_CAT_HEALTH = 8
+
+    SPEED_INCREASE_INTERVAL = 10000  # in milliseconds
 
     clock = pygame.time.Clock()
-    running = True
-    while running:
+    last_speed_increase_time = pygame.time.get_ticks()
+    
+    RUNNING = True
+    while RUNNING:
         current_time = pygame.time.get_ticks()
-        if current_time - last_speed_increase_time > speed_increase_interval:
-            if global_cat_speed < max_cat_speed:
-                global_cat_speed += math.log(global_cat_speed + 1)
+        if current_time - last_speed_increase_time > SPEED_INCREASE_INTERVAL:
+            if GLOBAL_CAT_SPEED < MAX_CAT_SPEED:
+                GLOBAL_CAT_SPEED += math.log(GLOBAL_CAT_SPEED + 1)
             last_speed_increase_time = current_time
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                RUNNING = False
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
@@ -46,19 +53,42 @@ def main():
         dog.update_barks()
         cats = check_collisions(dog, cats)
 
-        for cat in cats:
-            cat.descend(global_cat_speed, screen_width, screen_height)
+        # Check if boss is destroyed or all cats are gone
+        if dog.destroyed_boss:
+            print("Dog Wins")
+            RUNNING = False
 
-        if cat_timer <= 0:
-            cats.append(Cat(screen_width - 20, 0, (0, 0, 255), global_cat_speed))
-            cat_timer = cat_spawn_interval + np.random.normal(0, 60)
+
+        for cat in cats:
+            cat.descend(GLOBAL_CAT_SPEED, SCREEN_WIDTH, SCREEN_HEIGHT)
+
+
+        if dog.cats_destroyed == CATS_BEFORE_BOSS and not boss_exists(cats):
+            # Spawn the boss cat
+            boss = BossCat(2, 50, (200, 100, 50), BOSS_CAT_SPEED, BOSS_CAT_HEALTH)
+            cats.append(boss)
+
+        if CAT_TIMER <= 0 and not boss_exists(cats):
+            cats.append(Cat(SCREEN_WIDTH - 20, 0, (0, 0, 255), GLOBAL_CAT_SPEED))
+            CAT_TIMER = CAT_SPAWN_INTERVAL + np.random.normal(0, 60)
         else:
-            cat_timer -= 1
+            CAT_TIMER -= 1
+        
+        # Check if enlarged cat touches the dog
+        for cat in cats:
+            cat.check_food(food)  # Check interaction with food
+            if cat.enlarged and pygame.Rect(cat.x, cat.y, cat.width, cat.height).colliderect(pygame.Rect(dog.x, dog.y, dog.width, dog.height)):
+                print('Dog Dies')
+                RUNNING = False     # Implement end_game function to handle game over
+
 
         screen.fill((0, 0, 0))
         dog.draw(screen)
+        food.draw(screen)
         for cat in cats:
             cat.draw(screen)
+        
+    
         pygame.display.flip()
         clock.tick(50)
 
