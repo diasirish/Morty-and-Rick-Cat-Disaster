@@ -47,9 +47,10 @@ class Food:
 
 
 class Dog(Character):
-    def __init__(self, x, y, speed, color):
+    def __init__(self, x, y, speed, color, bark_speed):
         super().__init__(x, y, speed, color)
         self.barks = []
+        self.bark_speed = bark_speed
         self.bark_cooldown = 350  # Cooldown in milliseconds (1.5 seconds)
         self.last_bark_time = pygame.time.get_ticks() - self.bark_cooldown  # Initialize to allow immediate bark
         self.cats_destroyed = 0
@@ -58,7 +59,7 @@ class Dog(Character):
     def bark(self):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_bark_time > self.bark_cooldown:
-            self.barks.append(Bark(self.x + 20, self.y + 10, 15))
+            self.barks.append(Bark(self.x + 20, self.y + 10, self.bark_speed))
             self.last_bark_time = current_time
 
     def update_barks(self):
@@ -125,8 +126,8 @@ class BossCat(Cat):
     def __init__(self, x, y, color, speed, health):
         super().__init__(x, y, color, speed)
         self.health = health
-        # self.width = x*2
-        # self.height = y*2
+        self.width = 60
+        self.height = 60
 
     def hit_by_bark(self):
         self.health -= 1

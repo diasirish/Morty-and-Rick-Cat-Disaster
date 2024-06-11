@@ -1,5 +1,6 @@
 import pygame
 import math
+import random
 import time
 import numpy as np
 from events import check_collisions, boss_exists
@@ -13,18 +14,19 @@ def main():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Morty & Rick: Cat Disaster')
 
-    dog = Dog(320, 400, 4, (255, 0, 0))
-    cats = []
-    food = Food(580, 350)
-
-    CAT_SPAWN_INTERVAL = 200
+    CAT_SPAWN_INTERVAL = 150
     CAT_TIMER = 20
-    CATS_BEFORE_BOSS = 15
+    CATS_BEFORE_BOSS = 1
+    DOG_SPEED = 7
     GLOBAL_CAT_SPEED = 1  # Initial speed for all cats
     MAX_CAT_SPEED = 7.5
     BOSS_CAT_SPEED = 5
     BOSS_CAT_HEALTH = 8
+    BARK_SPEED = 45
 
+    dog = Dog(320, 400, DOG_SPEED, (255, 0, 0), BARK_SPEED)
+    cats = []
+    food = Food(580, 350)
     SPEED_INCREASE_INTERVAL = 10000  # in milliseconds
 
     clock = pygame.time.Clock()
@@ -65,11 +67,11 @@ def main():
 
         if dog.cats_destroyed == CATS_BEFORE_BOSS and not boss_exists(cats):
             # Spawn the boss cat
-            boss = BossCat(2, 50, (200, 100, 50), BOSS_CAT_SPEED, BOSS_CAT_HEALTH)
+            boss = BossCat(10, 140, (200, 100, 50), BOSS_CAT_SPEED, BOSS_CAT_HEALTH)
             cats.append(boss)
 
         if CAT_TIMER <= 0 and not boss_exists(cats):
-            cats.append(Cat(SCREEN_WIDTH - 20, 0, (0, 0, 255), GLOBAL_CAT_SPEED))
+            cats.append(Cat(int(random.uniform(40, SCREEN_WIDTH - 20)), 40, (0, 0, 255), GLOBAL_CAT_SPEED))
             CAT_TIMER = CAT_SPAWN_INTERVAL + np.random.normal(0, 60)
         else:
             CAT_TIMER -= 1

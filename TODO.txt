@@ -1,8 +1,26 @@
 Stuff I need to implement
 
 GAMEPLAY:
-1. Position the boss correctly.
-2. Incerase the speed of a bark (it is too slow for the fast cats).
-3. Add randomness in the intial positions of the cats in the game
+[X] Position the boss correctly.
+[X] Incerase the speed of a bark (it is too slow for the fast cats).
+[X] Add randomness in the intial positions of the cats in the game
+[] Change cat shape into the rectangle
+[] BONUS: Create intro with Larissa bringing food
+[] BONUS: Create dynamic increase for the dog (mario mushroom style)
 
 DESIGN:
+[] Create a Morty image
+[] Create a Rick image
+[] Create a cat 1 image
+[] Create a cat 2 image
+[] Create a cat 3 image
+[] Creat boss image
+[] Create background image
+[] Create food image
+[] Create end game 1
+[] Create end game 2
+[] BONUS: Create Larissa
+
+MENU:
+[] Create main menu (https://www.geeksforgeeks.org/creating-start-menu-in-pygame/)
+[] Create game over and main-menu entrance 
