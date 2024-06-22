@@ -8,7 +8,7 @@ class Character:
         self.y = y
         self.speed = speed
         self.color = color
-        self.width = 20
+        self.width = 40
         self.height = 20
 
     def move(self, dx, dy):
@@ -54,7 +54,11 @@ class Dog(Character):
         self.bark_cooldown = 350  # Cooldown in milliseconds (1.5 seconds)
         self.last_bark_time = pygame.time.get_ticks() - self.bark_cooldown  # Initialize to allow immediate bark
         self.cats_destroyed = 0
+        self.image = pygame.image.load('visuals/Morty_64x60.png')
         self.destroyed_boss = False
+    
+    def draw_img(self, screen):
+        screen.blit(self.image, (self.x, self.y))
 
     def bark(self):
         current_time = pygame.time.get_ticks()

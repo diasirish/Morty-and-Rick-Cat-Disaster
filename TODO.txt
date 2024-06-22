@@ -1,26 +1,32 @@
-Stuff I need to implement
+TODO Stuff:
 
 GAMEPLAY:
 [X] Position the boss correctly.
 [X] Incerase the speed of a bark (it is too slow for the fast cats).
 [X] Add randomness in the intial positions of the cats in the game
-[] Change cat shape into the rectangle
+[X] Change cat shape into the rectangle
+[] Make the big cats undestructable
+[X] Fine-tune the game to be enjoyable 
 [] BONUS: Create intro with Larissa bringing food
-[] BONUS: Create dynamic increase for the dog (mario mushroom style)
+[] BONUS: Create dynamic increase for the cat (mario mushroom style)
 
-DESIGN:
-[] Create a Morty image
+DESIGN (https://www.piskelapp.com/p/create/sprite):
+[X] Create a Morty image
 [] Create a Rick image
 [] Create a cat 1 image
 [] Create a cat 2 image
 [] Create a cat 3 image
 [] Creat boss image
-[] Create background image
+[X] Create background image
 [] Create food image
 [] Create end game 1
 [] Create end game 2
+[] Create barking 5 sound (per person) (https://www.youtube.com/watch?v=ab1se0dkeCU&ab_channel=DailyPicksandFlicks)
+[] Create cat sounds 
+[] Add music
 [] BONUS: Create Larissa
 
 MENU:
-[] Create main menu (https://www.geeksforgeeks.org/creating-start-menu-in-pygame/)
-[] Create game over and main-menu entrance 
+[] BONUS: Create main menu (https://www.geeksforgeeks.org/creating-start-menu-in-pygame/)
+[] BONUS: Create game over and main-menu entrance 
+[] 

@@ -14,14 +14,17 @@ def main():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Morty & Rick: Cat Disaster')
 
-    CAT_SPAWN_INTERVAL = 150
+    background_image = pygame.image.load('visuals/Background_v2_640x480.png')
+
+
+    CAT_SPAWN_INTERVAL = 100
     CAT_TIMER = 20
-    CATS_BEFORE_BOSS = 1
+    CATS_BEFORE_BOSS = 40
     DOG_SPEED = 7
-    GLOBAL_CAT_SPEED = 1  # Initial speed for all cats
+    GLOBAL_CAT_SPEED = 2  # Initial speed for all cats
     MAX_CAT_SPEED = 7.5
     BOSS_CAT_SPEED = 5
-    BOSS_CAT_HEALTH = 8
+    BOSS_CAT_HEALTH = 20
     BARK_SPEED = 45
 
     dog = Dog(320, 400, DOG_SPEED, (255, 0, 0), BARK_SPEED)
@@ -85,11 +88,12 @@ def main():
 
 
         screen.fill((0, 0, 0))
-        dog.draw(screen)
+        screen.blit(background_image, (0, 0))
         food.draw(screen)
         for cat in cats:
             cat.draw(screen)
-        
+        dog.draw_img(screen)
+
     
         pygame.display.flip()
         clock.tick(50)
