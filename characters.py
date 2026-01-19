@@ -25,6 +25,8 @@ class Bark:
         self.projectiles = [(x, y - i * 10) for i in range(8)]
         self.speed = speed
         self.active = True
+        self.bark_sound = pygame.mixer.Sound('sounds/woof_morty_1.wav')
+        self.bark_sound.play()
 
     def move(self):
         # Update all projectiles to move upward
@@ -34,6 +36,7 @@ class Bark:
         if self.active:
             for px, py in self.projectiles:
                 pygame.draw.circle(screen, (255, 255, 0), (px, py), 5)
+
 
 class Food:
     def __init__(self, x, y):
@@ -56,9 +59,14 @@ class Dog(Character):
         self.cats_destroyed = 0
         self.image = pygame.image.load('visuals/Morty_64x60.png')
         self.destroyed_boss = False
-    
+        self.position = 'right'
+
     def draw_img(self, screen):
-        screen.blit(self.image, (self.x, self.y))
+        if self.position == 'left':
+            flipped_image = pygame.transform.flip(self.image, True, False)
+            screen.blit(flipped_image, (self.x, self.y))
+        else:
+            screen.blit(self.image, (self.x, self.y))
 
     def bark(self):
         current_time = pygame.time.get_ticks()
@@ -87,7 +95,7 @@ class Cat(Character):
         self.direction = 'left'
         self.vertical_move = 50
         self.enlarged = False
-
+        self.image = pygame.image.load('visuals/Cat_ex1_64x57_right.png')
 
     def descend(self, global_speed, screen_width, screen_height):
         if not self.active:
@@ -116,14 +124,19 @@ class Cat(Character):
                 self.active = False
 
     def draw(self, screen):
-        if self.active:
-            super().draw(screen)
+        if self.direction == 'left':
+            flipped_image = pygame.transform.flip(self.image, True, False)
+            screen.blit(flipped_image, (self.x, self.y))
+        else:
+            screen.blit(self.image, (self.x, self.y))
 
     def check_food(self, food):
         if not self.enlarged and self.x < food.x + food.width and self.x + self.width > food.x and self.y < food.y + food.height and self.y + self.height > food.y:
             self.enlarged = True
             self.width *= 2
             self.height *= 2
+            print('Collision Detected')
+            self.image = pygame.transform.scale(self.image, (128, 114)) # todo - pass the image size correctly
 
 
 class BossCat(Cat):

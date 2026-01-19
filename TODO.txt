@@ -6,6 +6,9 @@ GAMEPLAY:
 [X] Add randomness in the intial positions of the cats in the game
 [X] Change cat shape into the rectangle
 [] Make the big cats undestructable
+[] Adjust cat size based on the original image
+[] Fix the error with the collision
+[] Make the dog turn left and righ
 [X] Fine-tune the game to be enjoyable 
 [] BONUS: Create intro with Larissa bringing food
 [] BONUS: Create dynamic increase for the cat (mario mushroom style)
@@ -13,7 +16,7 @@ GAMEPLAY:
 DESIGN (https://www.piskelapp.com/p/create/sprite):
 [X] Create a Morty image
 [] Create a Rick image
-[] Create a cat 1 image
+[X] Create a cat 1 image
 [] Create a cat 2 image
 [] Create a cat 3 image
 [] Creat boss image
@@ -21,7 +24,16 @@ DESIGN (https://www.piskelapp.com/p/create/sprite):
 [] Create food image
 [] Create end game 1
 [] Create end game 2
-[] Create barking 5 sound (per person) (https://www.youtube.com/watch?v=ab1se0dkeCU&ab_channel=DailyPicksandFlicks)
+[X] Create barking sound 1 (per person) (https://www.youtube.com/watch?v=ab1se0dkeCU&ab_channel=DailyPicksandFlicks)
+[] Create barking sound 2
+[] Create barking sound 3
+[] Create barking sound 4
+[] Create barking sound 5
+[] Create barking sound 1
+[] Create barking sound 2
+[] Create barking sound 3
+[] Create barking sound 4
+[] Create barking sound 5
 [] Create cat sounds 
 [] Add music
 [] BONUS: Create Larissa

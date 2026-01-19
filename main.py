@@ -8,6 +8,7 @@ from characters import Dog, Cat, Food, BossCat
 
 def main():
     pygame.init()
+    pygame.mixer.init()
     SCREEN_WIDTH = 640
     SCREEN_HEIGHT = 480
 
@@ -29,12 +30,14 @@ def main():
 
     dog = Dog(320, 400, DOG_SPEED, (255, 0, 0), BARK_SPEED)
     cats = []
-    food = Food(580, 350)
+    food = Food(200, 70)
     SPEED_INCREASE_INTERVAL = 10000  # in milliseconds
 
     clock = pygame.time.Clock()
     last_speed_increase_time = pygame.time.get_ticks()
-    
+    start_sound = pygame.mixer.Sound('sounds/smw_power-up_appears.wav')
+    start_sound.play()
+
     RUNNING = True
     while RUNNING:
         current_time = pygame.time.get_ticks()
@@ -50,8 +53,10 @@ def main():
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             dog.move(-1, 0)
+            dog.position = 'left'
         if keys[pygame.K_RIGHT]:
             dog.move(1, 0)
+            dog.position = 'right'
         if keys[pygame.K_SPACE]:
             dog.bark()
 
@@ -82,7 +87,8 @@ def main():
         # Check if enlarged cat touches the dog
         for cat in cats:
             cat.check_food(food)  # Check interaction with food
-            if cat.enlarged and pygame.Rect(cat.x, cat.y, cat.width, cat.height).colliderect(pygame.Rect(dog.x, dog.y, dog.width, dog.height)):
+            # if cat.enlarged and pygame.Rect(cat.x, cat.y, cat.width, cat.height).colliderect(pygame.Rect(dog.x, dog.y, dog.width, dog.height)):
+            if pygame.Rect(cat.x, cat.y, cat.width, cat.height).colliderect(pygame.Rect(dog.x, dog.y, dog.width, dog.height)):
                 print('Dog Dies')
                 RUNNING = False     # Implement end_game function to handle game over
 
