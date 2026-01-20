@@ -9,8 +9,8 @@ GAMEPLAY:
 [X] Adjust cat size based on the original image
 [X] Fix the error with the collision
 [X] Make the dog turn left and righ
-[X] Fine-tune the game to be enjoyable 
-[] Power Up sound works only when the cat is 
+[X] Power Up sound works only when the cat is 
+[] Fine-tune the game to be enjoyable 
 [] BONUS: Create intro with Larissa bringing food
 [] BONUS: Create dynamic increase for the cat (mario mushroom style)
 
@@ -20,11 +20,11 @@ DESIGN (https://www.piskelapp.com/p/create/sprite):
 [X] Create a cat 1 image
 [] Create a cat 2 image
 [] Create a cat 3 image
-[] Creat boss image
+[] Creat boss image ()
 [X] Create background image
-[] Create food image
-[] Create end game 1
-[] Create end game 2
+[X] Create food image
+[X] Create end game 1
+[X] Create end game Sound
 [X] Create barking sound 1 (per person) (https://www.youtube.com/watch?v=ab1se0dkeCU&ab_channel=DailyPicksandFlicks)
 [] Create barking sound 2
 [] Create barking sound 3

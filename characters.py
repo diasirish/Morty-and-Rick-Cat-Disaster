@@ -39,14 +39,38 @@ class Bark:
 
 
 class Food:
-    def __init__(self, x, y):
+    def __init__(self, x, y, image_path=None, sound_path=None, scale=1.0):
+        self.image = None
+        self.sound = None
+        if image_path:
+            try:
+                self.image = pygame.image.load(image_path)
+            except pygame.error:
+                self.image = None
+        if self.image:
+            if scale != 1.0:
+                new_width = max(1, int(self.image.get_width() * scale))
+                new_height = max(1, int(self.image.get_height() * scale))
+                self.image = pygame.transform.scale(self.image, (new_width, new_height))
+            self.width = self.image.get_width()
+            self.height = self.image.get_height()
+        else:
+            self.width = 20
+            self.height = 20
         self.x = x
         self.y = y
-        self.width = 20
-        self.height = 20
+        if sound_path:
+            self.sound = pygame.mixer.Sound(sound_path)
+
+    def play_sound(self):
+        if self.sound:
+            self.sound.play()
 
     def draw(self, screen):
-        pygame.draw.rect(screen, (100, 255, 100), (self.x, self.y, self.width, self.height))
+        if self.image:
+            screen.blit(self.image, (self.x, self.y))
+        else:
+            pygame.draw.rect(screen, (100, 255, 100), (self.x, self.y, self.width, self.height))
 
 
 class Dog(Character):
@@ -133,6 +157,7 @@ class Cat(Character):
     def check_food(self, food):
         if not self.enlarged and self.x < food.x + food.width and self.x + self.width > food.x and self.y < food.y + food.height and self.y + self.height > food.y:
             self.enlarged = True
+            food.play_sound()
             old_image_height = self.image.get_height()
             self.width = int(self.width * Cat.ENLARGE_SCALE)
             self.height = int(self.height * Cat.ENLARGE_SCALE)
