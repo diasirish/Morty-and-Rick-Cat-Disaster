@@ -5,11 +5,12 @@ GAMEPLAY:
 [X] Incerase the speed of a bark (it is too slow for the fast cats).
 [X] Add randomness in the intial positions of the cats in the game
 [X] Change cat shape into the rectangle
-[] Make the big cats undestructable
-[] Adjust cat size based on the original image
-[] Fix the error with the collision
-[] Make the dog turn left and righ
+[X] Make the big cats undestructable
+[X] Adjust cat size based on the original image
+[X] Fix the error with the collision
+[X] Make the dog turn left and righ
 [X] Fine-tune the game to be enjoyable 
+[] Power Up sound works only when the cat is 
 [] BONUS: Create intro with Larissa bringing food
 [] BONUS: Create dynamic increase for the cat (mario mushroom style)
 

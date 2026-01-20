@@ -89,13 +89,17 @@ class Dog(Character):
             bark.draw(screen)
 
 class Cat(Character):
+    VERTICAL_MOVE = 50
+    ENLARGE_SCALE = 1.5
+
     def __init__(self, x, y, color, speed):
         super().__init__(x, y, speed, color)
         self.active = True
         self.direction = 'left'
-        self.vertical_move = 50
+        self.vertical_move = Cat.VERTICAL_MOVE
         self.enlarged = False
         self.image = pygame.image.load('visuals/Cat_ex1_64x57_right.png')
+        self.health = 1
 
     def descend(self, global_speed, screen_width, screen_height):
         if not self.active:
@@ -114,15 +118,6 @@ class Cat(Character):
                 self.y += self.vertical_move
                 self.direction = 'left'
 
-        if self.enlarged and self.y > screen_height * 3 / 4:
-            self.active = True  # Allows enlarged cats to go lower
-                    
-        if self.y > screen_height * 3 / 4:
-            if self.enlarged:
-                self.active = True
-            else:
-                self.active = False
-
     def draw(self, screen):
         if self.direction == 'left':
             flipped_image = pygame.transform.flip(self.image, True, False)
@@ -130,13 +125,23 @@ class Cat(Character):
         else:
             screen.blit(self.image, (self.x, self.y))
 
+    def hit_by_bark(self):
+        self.health -= 1
+        if self.health <= 0:
+            self.active = False
+
     def check_food(self, food):
         if not self.enlarged and self.x < food.x + food.width and self.x + self.width > food.x and self.y < food.y + food.height and self.y + self.height > food.y:
             self.enlarged = True
-            self.width *= 2
-            self.height *= 2
+            old_image_height = self.image.get_height()
+            self.width = int(self.width * Cat.ENLARGE_SCALE)
+            self.height = int(self.height * Cat.ENLARGE_SCALE)
             print('Collision Detected')
-            self.image = pygame.transform.scale(self.image, (128, 114)) # todo - pass the image size correctly
+            new_image_width = int(self.image.get_width() * Cat.ENLARGE_SCALE)
+            new_image_height = int(self.image.get_height() * Cat.ENLARGE_SCALE)
+            self.image = pygame.transform.scale(self.image, (new_image_width, new_image_height))
+            self.y -= (new_image_height - old_image_height)
+            self.health = 9
 
 
 class BossCat(Cat):
