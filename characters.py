@@ -82,6 +82,8 @@ class Dog(Character):
         self.last_bark_time = pygame.time.get_ticks() - self.bark_cooldown  # Initialize to allow immediate bark
         self.cats_destroyed = 0
         self.image = pygame.image.load('visuals/Morty_64x60.png')
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
         self.destroyed_boss = False
         self.position = 'right'
 

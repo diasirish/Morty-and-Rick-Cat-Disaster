@@ -223,11 +223,13 @@ def run_game(screen, settings, highscore, character):
         if not game_over:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_LEFT]:
-                dog.move(-1, 0)
-                dog.position = 'left'
+                if dog.x - dog.speed >= 0:
+                    dog.move(-1, 0)
+                    dog.position = 'left'
             if keys[pygame.K_RIGHT]:
-                dog.move(1, 0)
-                dog.position = 'right'
+                if dog.x + dog.width + dog.speed <= screen_width:
+                    dog.move(1, 0)
+                    dog.position = 'right'
             if keys[pygame.K_SPACE]:
                 dog.bark()
 
