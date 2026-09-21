@@ -4,3 +4,5 @@ __pycache__/
 runs/
 .DS_Store
 .pytest_cache/
+
+.venv-fly/

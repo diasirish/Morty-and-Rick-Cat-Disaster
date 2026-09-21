@@ -1,5 +1,7 @@
 # Morty & Rick: Cat Disaster
 
+Fly-brain demo (`fruitfly/demo` branch): see [FLY_DEMO.md](FLY_DEMO.md) for setup, controls, and how the adapter works. The `learn` branch retains the original RL exercises.
+
 A pygame arcade game - and a Gym-style reinforcement-learning environment.
 
 Play as Morty (or Rick), barking at waves of cats descending across the
