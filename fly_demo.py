@@ -64,24 +64,43 @@ class FlyController:
                for row in groups for ids in row):
             raise RuntimeError("Brain data lacks required left/right neuron types")
         self.rates = np.zeros((2, 2))
+        self._clear_telemetry()
+
+    def _clear_telemetry(self):
+        self.last_spikes = np.array([], dtype=int)
+        self.last_drive = np.zeros((2, 2))
+        self.spike_count = 0
+        self.sample_seconds = 0.0
+        self.telemetry_tick = 0
+        self.last_action = Action.NOOP
 
     def reset(self, seed):
         self.brain.reset(seed)
         self.rates.fill(0)
+        self._clear_telemetry()
 
     def act(self, engine, steps=4, blind=False):
         drive = np.zeros((2, 2)) if blind else encode_scene(engine)
         inject = [(self.inputs[s][k], drive[s, k])
                   for s in range(2) for k in range(2) if drive[s, k] > 0]
         decay = np.exp(-self.brain.dt / 0.12)
+        batches = []
         for _ in range(steps):
             fired = self.brain.step(inject=inject)
+            batches.append(fired)
             for s in range(2):
                 for k in range(2):
                     fraction = np.isin(self.outputs[s][k], fired).mean()
                     self.rates[s, k] = (decay * self.rates[s, k]
                                        + (1 - decay) * fraction / self.brain.dt)
-        return decode_rates(self.rates)
+        # Include spikes from every 20 ms substep, not just the last one.
+        self.last_spikes = np.unique(np.concatenate(batches))
+        self.spike_count = sum(len(batch) for batch in batches)
+        self.sample_seconds = steps * self.brain.dt
+        self.last_drive = drive.copy()
+        self.telemetry_tick = getattr(self, 'telemetry_tick', 0) + 1
+        self.last_action = decode_rates(self.rates)
+        return self.last_action
 
 
 def main():
@@ -93,6 +112,7 @@ def main():
     parser.add_argument("--controller", choices=["fly", "blind", "random"], default="fly")
     parser.add_argument("--data", type=Path, default=Path(__file__).resolve().parent.parent / "fruit_fly" / "brain-data")
     parser.add_argument("--report", type=Path, default=Path("runs/fly-demo.json"))
+    parser.add_argument("--snapshot", type=Path, help="save the last game + neural panel frame as PNG")
     args = parser.parse_args()
     if args.episodes < 1 or args.max_steps < 1:
         parser.error("episodes and max-steps must be positive")
@@ -102,20 +122,25 @@ def main():
     import pygame
     from rl.env import CatDisasterEnv
     controller = None if args.controller == "random" else FlyController(args.data, args.seed)
-    env = CatDisasterEnv(render_mode=None if args.headless else "human")
+    if not args.headless or args.snapshot:
+        from fly_panel import FlyPanelEnv
+        env = FlyPanelEnv(controller)
+    else:
+        env = CatDisasterEnv()
     results = []
     clock = pygame.time.Clock()
     try:
         for episode in range(args.episodes):
             seed = args.seed + episode
-            _, info = env.reset(seed=seed)
             rng = np.random.default_rng(seed)
             if controller:
                 controller.reset(seed)
+            _, info = env.reset(seed=seed)
             reward_sum, counts = 0.0, [0] * 6
             start = time.perf_counter()
             terminated = truncated = stopped = False
             for step in range(args.max_steps):
+                frame_start = time.perf_counter()
                 if not args.headless:
                     stopped = any(e.type == pygame.QUIT or
                                   (e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE)
@@ -128,9 +153,17 @@ def main():
                 _, reward, terminated, truncated, info = env.step(action)
                 reward_sum += reward
                 if not args.headless:
-                    rates = controller.rates.round(1).tolist() if controller else []
-                    pygame.display.set_caption(f"Morty | {args.controller} | score {info['score']} | neural Hz {rates}")
-                    clock.tick(12)
+                    # Smooth spike afterglow between policy decisions.
+                    while time.perf_counter() - frame_start < 1 / 12:
+                        stopped = any(e.type == pygame.QUIT or
+                                      (e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE)
+                                      for e in pygame.event.get())
+                        if stopped:
+                            break
+                        env.render()
+                        clock.tick(60)
+                if stopped:
+                    break
                 if terminated or truncated:
                     break
             row = dict(seed=seed, score=info["score"], won=info["won"],
@@ -142,6 +175,9 @@ def main():
             print(json.dumps(row), flush=True)
             if stopped:
                 break
+        if args.snapshot:
+            args.snapshot.parent.mkdir(parents=True, exist_ok=True)
+            pygame.image.save(pygame.display.get_surface(), args.snapshot)
     finally:
         env.close()
         pygame.quit()
