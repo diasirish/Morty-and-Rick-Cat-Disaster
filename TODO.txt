@@ -9,37 +9,38 @@ GAMEPLAY:
 [X] Adjust cat size based on the original image
 [X] Fix the error with the collision
 [X] Make the dog turn left and righ
-[X] Power Up sound works only when the cat is 
-[] Fine-tune the game to be enjoyable 
-[] BONUS: Create intro with Larissa bringing food
-[] BONUS: Create dynamic increase for the cat (mario mushroom style)
+[X] Power Up sound works only when the cat is
+[X] Fine-tune the game to be enjoyable (pattern mix + spawn bias, tune in Options)
+[X] BONUS: Create intro with Larissa bringing food
+[X] BONUS: Create dynamic increase for the cat (mario mushroom style)
+[X] Quirky cat patterns: sine / diver / pauser / hopper (game/patterns.py)
+[X] Refactor into deterministic engine for RL (game/engine.py)
 
 DESIGN (https://www.piskelapp.com/p/create/sprite):
 [X] Create a Morty image
-[] Create a Rick image
+[X] Create a Rick image (generated: tools/generate_assets.py --only rick)
 [X] Create a cat 1 image
 [] Create a cat 2 image
 [] Create a cat 3 image
-[] Creat boss image ()
-[X] Create background image
-[X] Create food image
+[X] Creat boss image (red-tinted cat + health bar, game/render.py)
+[X] Create background image (smoothed v3 generated from v2)
+[X] Create food image (food_32.png, transparent)
 [X] Create end game 1
 [X] Create end game Sound
 [X] Create barking sound 1 (per person) (https://www.youtube.com/watch?v=ab1se0dkeCU&ab_channel=DailyPicksandFlicks)
-[] Create barking sound 2
-[] Create barking sound 3
-[] Create barking sound 4
-[] Create barking sound 5
-[] Create barking sound 1
-[] Create barking sound 2
-[] Create barking sound 3
-[] Create barking sound 4
-[] Create barking sound 5
-[] Create cat sounds 
+[X] Create barking sound 2 (Rick: pitched-up Morty bark, generated)
+[] Create cat sounds
 [] Add music
-[] BONUS: Create Larissa
+[X] BONUS: Create Larissa (Larissa_48x72_f1/f2.png, generated)
 
 MENU:
-[] BONUS: Create main menu (https://www.geeksforgeeks.org/creating-start-menu-in-pygame/)
-[] BONUS: Create game over and main-menu entrance 
-[] 
+[X] BONUS: Create main menu (https://www.geeksforgeeks.org/creating-start-menu-in-pygame/)
+[X] BONUS: Create game over and main-menu entrance
+
+RL (the new frontier):
+[] Implement rl/networks.py (QNetwork)
+[] Implement rl/replay_buffer.py (ReplayBuffer)
+[] Implement rl/agent.py (DQNAgent)
+[] Beat the --random-agent baseline
+[] Beat the game (boss kill in inference mode)
+[] Experiment: reward shaping (rl/wrappers.py), Double DQN, dueling, PPO
