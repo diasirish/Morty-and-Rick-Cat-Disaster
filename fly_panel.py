@@ -6,6 +6,7 @@ import numpy as np
 import pygame
 
 from rl.env import CatDisasterEnv
+from game.design import THEMES, DesignRenderer, plaque
 
 WIDTH = 420
 BG = (8, 16, 22)
@@ -19,8 +20,9 @@ PINK = (255, 102, 131)
 
 
 class BrainPanel:
-    def __init__(self, controller):
+    def __init__(self, controller, design="original"):
         self.controller = controller
+        self.design = design
         self.font = pygame.font.SysFont('Menlo,DejaVu Sans Mono', 11)
         self.small = pygame.font.SysFont('Menlo,DejaVu Sans Mono', 9)
         self.big = pygame.font.SysFont('Menlo,DejaVu Sans Mono', 22, bold=True)
@@ -84,7 +86,7 @@ class BrainPanel:
                 pygame.draw.rect(self.surface, color, (bx, y + 16, fill, 4), border_radius=2)
             self.text(f"{'L' if side == 0 else 'R'} {value:.1f}", bx, y + 23, color, self.small)
 
-    def draw(self):
+    def _draw_original(self):
         s = self.surface
         s.fill(BG)
         now = time.monotonic()
@@ -148,12 +150,70 @@ class BrainPanel:
         self.text(f'MORTY > {action}', 31, 447, WHITE)
         return s
 
+    def draw(self):
+        original = self._draw_original()
+        if self.design == 'original':
+            return original
+        # Keep exactly the same real-spike graph and hover geometry.
+        graph = original.subsurface((20, 176, 380, 151)).copy()
+        t = THEMES[self.design]
+        if self.design == 'backyard':
+            graph.fill((205,255,161), special_flags=pygame.BLEND_RGB_MULT)
+        s = self.surface
+        s.fill(t.bg)
+        for y in range(0,480,21):
+            pygame.draw.line(s,t.panel,(5,y),(415,y+4),2)
+        plaque(s,(7,7,406,466),t)
+        pygame.draw.rect(s,t.accent,(20,17,380,25),border_radius=3)
+        self.text("LARISSA'S FLY-O-MATIC",31,23,t.bg)
+        self.text('MK.01',355,23,t.bg,self.small)
+        paper=pygame.Surface((122,126))
+        paper.fill(t.ink)
+        paper.blit(self.avatar,(5,5))
+        portrait=pygame.transform.rotate(paper,-3)
+        s.blit(portrait,(22,48))
+        self.text('SPECIMEN / DO NOT FEED',165,57,t.secondary,self.small)
+        ctrl=self.controller
+        self.text(f'{ctrl.brain.n:,}' if ctrl else 'OFFLINE',165, 73,t.ink,self.big)
+        self.text('CELLS IN THIS LITTLE MENACE',165,101,t.muted,self.small)
+        self.text(f'{ctrl.spike_count:,}' if ctrl else '0',165,116,t.accent,self.big)
+        ms=round(ctrl.sample_seconds*1000) if ctrl else 0
+        self.text(f'SPIKES / {ms} ms',165,143,t.muted,self.small)
+        plaque(s,(14,171,392,160),t,fill=t.screen)
+        s.blit(graph,(20,176))
+        # Chunky instrument scales replace the generic dashboard bars.
+        drive=ctrl.last_drive if ctrl else np.zeros((2,2))
+        rates=ctrl.rates if ctrl else np.zeros((2,2))
+        rows=[('TARGET SIGHTED',drive[:,0],20,341,t.secondary,1),
+              ('DANGER NEARBY',drive[:,1],224,341,t.secondary,1),
+              ('TURN / DNa02 Hz',rates[:,0],20,386,t.accent,25),
+              ('BARK / DNp01 Hz',rates[:,1],224,386,t.accent,25)]
+        for name,values,x,y,color,scale in rows:
+            self.text(name,x,y,t.ink,self.small)
+            for side,value in enumerate(values):
+                bx=x+84*side
+                for tick in range(10):
+                    lit=value/scale >= (tick+1)/10
+                    pygame.draw.rect(s,color if lit else t.bg,(bx+tick*7,y+14,5,6))
+                self.text(f"{'L' if side==0 else 'R'} {value:.1f}",bx,y+24,t.muted,self.small)
+        pygame.draw.rect(s,t.accent,(20,429,380,24),border_radius=3)
+        action=ctrl.last_action.name.replace('_',' + ') if ctrl else 'RANDOM'
+        self.text('MORTY > '+action,31,435,t.bg)
+        self.text('F1: DESIGNS   /   HOVER A CELL   /   ESC: EXIT',52,455,t.muted,self.small)
+        return s
+
 
 class FlyPanelEnv(CatDisasterEnv):
     """Wider spectator window; environment observations remain the game only."""
-    def __init__(self, controller, **kwargs):
+    def __init__(self, controller, design="original", **kwargs):
         super().__init__(render_mode='human', **kwargs)
-        self.panel = BrainPanel(controller)
+        self.panel = BrainPanel(controller, design)
+        self.set_design(design)
+
+    def set_design(self, design):
+        self.design = design
+        self.panel.design = design
+        self.view_renderer = DesignRenderer(self.assets, self.config, design)
 
     def _open_window(self):
         self._window = pygame.display.set_mode((self.config.screen_width + WIDTH,
@@ -163,7 +223,7 @@ class FlyPanelEnv(CatDisasterEnv):
     def _render_human(self):
         if self._window is None:
             self._open_window()
-        self._window.blit(self.renderer.draw(self.engine), (0, 0))
+        self._window.blit(self.view_renderer.draw(self.engine), (0, 0))
         self._window.blit(self.panel.draw(), (self.config.screen_width, 0))
         pygame.event.pump()
         pygame.display.flip()

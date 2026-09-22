@@ -6,6 +6,7 @@ game/config.py), so tweaks here flow straight into the engine.
 """
 
 import pygame
+from .design import THEMES, draw_menu
 
 MENU_FPS = 30
 
@@ -24,8 +25,8 @@ def _start_background(assets, screen):
         background, (screen.get_width(), screen.get_height()))
 
 
-def menu_loop(screen, font, title_font, assets):
-    options = ["Start Game", "Options", "Quit"]
+def menu_loop(screen, font, title_font, assets, design="original"):
+    options = ["Start Game", "Designs", "Options", "Quit"]
     selected = 0
     clock = pygame.time.Clock()
     background = _start_background(assets, screen)
@@ -39,27 +40,34 @@ def menu_loop(screen, font, title_font, assets):
                     selected = (selected - 1) % len(options)
                 elif event.key in (pygame.K_DOWN, pygame.K_s):
                     selected = (selected + 1) % len(options)
+                elif event.key == pygame.K_ESCAPE:
+                    return "quit"
                 elif event.key == pygame.K_RETURN:
                     if options[selected] == "Start Game":
                         return "start"
+                    if options[selected] == "Designs":
+                        return "design"
                     if options[selected] == "Options":
                         return "options"
                     return "quit"
 
-        if background is not None:
-            screen.blit(background, (0, 0))
+        if design != 'original':
+            draw_menu(screen, assets, 'CAT DISASTER', options, selected, design)
         else:
-            screen.fill((0, 0, 0))
-        draw_centered_text(screen, title_font, "Morty & Rick: Cat Disaster", 120, (255, 255, 255))
-        for index, label in enumerate(options):
-            color = (255, 255, 0) if index == selected else (255, 255, 255)
-            draw_centered_text(screen, font, label, 220 + index * 40, color)
-        draw_centered_text(screen, font, "Use arrows or WASD, Enter to select", 420, (180, 180, 180))
+            if background is not None:
+                screen.blit(background, (0, 0))
+            else:
+                screen.fill((0, 0, 0))
+            draw_centered_text(screen, title_font, "Morty & Rick: Cat Disaster", 120, (255, 255, 255))
+            for index, label in enumerate(options):
+                color = (255, 255, 0) if index == selected else (255, 255, 255)
+                draw_centered_text(screen, font, label, 220 + index * 40, color)
+            draw_centered_text(screen, font, "Use arrows or WASD, Enter to select", 420, (180, 180, 180))
         pygame.display.flip()
         clock.tick(MENU_FPS)
 
 
-def character_select_loop(screen, font, title_font, assets):
+def character_select_loop(screen, font, title_font, assets, design="original"):
     options = ["Morty", "Rick"]
     selected = 0
     clock = pygame.time.Clock()
@@ -79,20 +87,28 @@ def character_select_loop(screen, font, title_font, assets):
                 elif event.key == pygame.K_ESCAPE:
                     return None
 
-        if background is not None:
-            screen.blit(background, (0, 0))
+        if design != 'original':
+            draw_menu(screen, assets, 'CHOOSE YOUR HERO', options, selected, design)
+            for index, name in enumerate(options):
+                sprite = assets.image('dog_' + name.lower())
+                if sprite is not None:
+                    screen.blit(pygame.transform.smoothscale(sprite, (40, 38)),
+                                (screen.get_width() // 2 + 140, 172 + index * 46))
         else:
-            screen.fill((0, 0, 0))
-        draw_centered_text(screen, title_font, "Choose Your Character", 120, (255, 255, 255))
-        for index, label in enumerate(options):
-            color = (255, 255, 0) if index == selected else (255, 255, 255)
-            y = 220 + index * 70
-            draw_centered_text(screen, font, label, y, color)
-            sprite = assets.image(f"dog_{label.lower()}")
-            if sprite is not None:
-                rect = sprite.get_rect(center=(screen.get_width() // 2 - 120, y))
-                screen.blit(sprite, rect)
-        draw_centered_text(screen, font, "Enter to start, Esc to go back", 420, (180, 180, 180))
+            if background is not None:
+                screen.blit(background, (0, 0))
+            else:
+                screen.fill((0, 0, 0))
+            draw_centered_text(screen, title_font, "Choose Your Character", 120, (255, 255, 255))
+            for index, label in enumerate(options):
+                color = (255, 255, 0) if index == selected else (255, 255, 255)
+                y = 220 + index * 70
+                draw_centered_text(screen, font, label, y, color)
+                sprite = assets.image(f"dog_{label.lower()}")
+                if sprite is not None:
+                    rect = sprite.get_rect(center=(screen.get_width() // 2 - 120, y))
+                    screen.blit(sprite, rect)
+            draw_centered_text(screen, font, "Enter to start, Esc to go back", 420, (180, 180, 180))
         pygame.display.flip()
         clock.tick(MENU_FPS)
 
@@ -130,7 +146,7 @@ OPTION_ROWS = [
 ]
 
 
-def options_loop(screen, font, title_font, config):
+def options_loop(screen, font, title_font, config, design="original"):
     selected = 0
     clock = pygame.time.Clock()
 
@@ -164,16 +180,16 @@ def options_loop(screen, font, title_font, config):
                 elif event.key == pygame.K_ESCAPE:
                     return "back"
 
-        screen.fill((0, 0, 0))
-        draw_centered_text(screen, title_font, "Options", 60, (255, 255, 255))
-        start_y = 110
+        screen.fill(THEMES[design].bg)
+        draw_centered_text(screen, title_font, "Options", 50, THEMES[design].ink)
+        start_y = 90
         for index, (label, attr, _, _, _) in enumerate(OPTION_ROWS):
             color = (255, 255, 0) if index == selected else (255, 255, 255)
             if attr is None:
-                draw_centered_text(screen, font, label, start_y + index * 26, color)
+                draw_centered_text(screen, font, label, start_y + index * 24, color)
             else:
                 value = format_setting_value(getattr(config, attr))
-                draw_centered_text(screen, font, f"{label}: {value}", start_y + index * 26, color)
+                draw_centered_text(screen, font, f"{label}: {value}", start_y + index * 24, color)
         draw_centered_text(screen, font, "Left/Right to adjust, Enter/Esc to go back", 450, (180, 180, 180))
         pygame.display.flip()
         clock.tick(MENU_FPS)

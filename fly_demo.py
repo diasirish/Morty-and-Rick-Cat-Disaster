@@ -13,6 +13,7 @@ os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
 import numpy as np
 
 from game.engine import Action
+from game.design import THEMES, load_design, design_loop
 
 
 def encode_scene(engine):
@@ -113,6 +114,8 @@ def main():
     parser.add_argument("--data", type=Path, default=Path(__file__).resolve().parent.parent / "fruit_fly" / "brain-data")
     parser.add_argument("--report", type=Path, default=Path("runs/fly-demo.json"))
     parser.add_argument("--snapshot", type=Path, help="save the last game + neural panel frame as PNG")
+    parser.add_argument("--design", choices=list(THEMES), default=None)
+    parser.add_argument("--menu", action="store_true", help="open design menu before playing")
     args = parser.parse_args()
     if args.episodes < 1 or args.max_steps < 1:
         parser.error("episodes and max-steps must be positive")
@@ -124,9 +127,27 @@ def main():
     controller = None if args.controller == "random" else FlyController(args.data, args.seed)
     if not args.headless or args.snapshot:
         from fly_panel import FlyPanelEnv
-        env = FlyPanelEnv(controller)
+        env = FlyPanelEnv(controller, design=args.design or load_design())
     else:
         env = CatDisasterEnv()
+    def process_events():
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                return True
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
+                selected = design_loop(pygame.display.get_surface(), env.assets, env.design)
+                if selected == 'quit':
+                    return True
+                env.set_design(selected)
+        return False
+
+    if args.menu and not args.headless:
+        selected = design_loop(pygame.display.get_surface(), env.assets, env.design)
+        if selected == 'quit':
+            env.close()
+            pygame.quit()
+            return
+        env.set_design(selected)
     results = []
     clock = pygame.time.Clock()
     try:
@@ -142,9 +163,7 @@ def main():
             for step in range(args.max_steps):
                 frame_start = time.perf_counter()
                 if not args.headless:
-                    stopped = any(e.type == pygame.QUIT or
-                                  (e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE)
-                                  for e in pygame.event.get())
+                    stopped = process_events()
                     if stopped:
                         break
                 action = (controller.act(env.engine, env.frame_skip, args.controller == "blind")
@@ -155,9 +174,7 @@ def main():
                 if not args.headless:
                     # Smooth spike afterglow between policy decisions.
                     while time.perf_counter() - frame_start < 1 / 12:
-                        stopped = any(e.type == pygame.QUIT or
-                                      (e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE)
-                                      for e in pygame.event.get())
+                        stopped = process_events()
                         if stopped:
                             break
                         env.render()

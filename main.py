@@ -25,7 +25,7 @@ from game.assets import Assets
 from game.audio import AudioPlayer
 from game.config import GameConfig
 from game.engine import Action, EventType, GameEngine
-from game.render import Renderer
+from game.design import DesignRenderer, load_design, design_loop
 from game.ui import character_select_loop, menu_loop, options_loop
 
 HIGHSCORE_PATH = "highscore.json"
@@ -64,10 +64,10 @@ def keys_to_action(keys):
     return Action.BARK if bark else Action.NOOP
 
 
-def run_game(screen, config, highscore, character, assets):
+def run_game(screen, config, highscore, character, assets, design="original"):
     engine = GameEngine(config, character)
     engine.reset()  # unseeded: every human round is fresh
-    renderer = Renderer(assets, config)
+    renderer = DesignRenderer(assets, config, design)
     audio = AudioPlayer(assets, character)
     clock = pygame.time.Clock()
     linger = GAME_OVER_LINGER_FRAMES
@@ -117,23 +117,27 @@ def main(args=None):
     highscore = load_highscore(HIGHSCORE_PATH)
 
     if game_only:
-        run_game(screen, config, highscore, "morty", assets)
+        run_game(screen, config, highscore, "morty", assets, load_design())
         pygame.quit()
         return
 
     running = True
     while running:
-        choice = menu_loop(screen, font, title_font, assets)
+        design = load_design()
+        choice = menu_loop(screen, font, title_font, assets, design)
         if choice == "start":
-            character = character_select_loop(screen, font, title_font, assets)
+            character = character_select_loop(screen, font, title_font, assets, design)
             if character == "quit":
                 running = False
             elif character is not None:
-                highscore, quitting = run_game(screen, config, highscore, character, assets)
+                highscore, quitting = run_game(screen, config, highscore, character, assets, design)
                 if quitting:
                     running = False
+        elif choice == "design":
+            if design_loop(screen, assets, design) == "quit":
+                running = False
         elif choice == "options":
-            if options_loop(screen, font, title_font, config) == "quit":
+            if options_loop(screen, font, title_font, config, design) == "quit":
                 running = False
         else:
             running = False
