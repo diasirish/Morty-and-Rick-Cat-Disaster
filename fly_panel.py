@@ -89,15 +89,7 @@ class BrainPanel:
     def _draw_original(self):
         s = self.surface
         s.fill(BG)
-        now = time.monotonic()
         ctrl = self.controller
-        if ctrl is not None and ctrl.telemetry_tick != self.last_tick:
-            if ctrl.telemetry_tick < self.last_tick:
-                self.lit_at.fill(-1000)
-            self.last_tick = ctrl.telemetry_tick
-            if ctrl.telemetry_tick:
-                self.lit_at[np.isin(self.ids, ctrl.last_spikes)] = now
-        pulse = np.exp(-np.maximum(0, now - self.lit_at) / 0.13)
         pygame.draw.line(s, LINE, (0, 0), (0, 480))
         pygame.draw.circle(s, CYAN if ctrl else MUTED, (25, 25), 3)
         self.text('FRUIT FLY / NEURAL LIVE', 37, 18, WHITE)
@@ -112,6 +104,30 @@ class BrainPanel:
         window_ms = round(ctrl.sample_seconds * 1000) if ctrl else 0
         self.text(f'SPIKES / LAST {window_ms} ms', 151, 141, MUTED, self.small)
 
+        self._draw_network()
+        drive = ctrl.last_drive if ctrl else np.zeros((2, 2))
+        rates = ctrl.rates if ctrl else np.zeros((2, 2))
+        self.bar('SENSE / TARGET', drive[:, 0], 20, 340, AMBER)
+        self.bar('SENSE / THREAT', drive[:, 1], 224, 340, AMBER)
+        self.bar('DNa02 / STEER Hz', rates[:, 0], 20, 385, CYAN, 25)
+        self.bar('DNp01 / BARK Hz', rates[:, 1], 224, 385, PINK, 25)
+        pygame.draw.rect(s, (20, 48, 49), (20, 439, 380, 28), border_radius=5)
+        action = ctrl.last_action.name.replace('_', ' + ') if ctrl else 'RANDOM'
+        self.text(f'MORTY > {action}', 31, 447, WHITE)
+        return s
+
+    def _draw_network(self):
+        """Draw directly into the final panel in every theme, on every frame."""
+        s = self.surface
+        now = time.monotonic()
+        ctrl = self.controller
+        if ctrl is not None and ctrl.telemetry_tick != self.last_tick:
+            if ctrl.telemetry_tick < self.last_tick:
+                self.lit_at.fill(-1000)
+            self.last_tick = ctrl.telemetry_tick
+            if ctrl.telemetry_tick:
+                self.lit_at[np.isin(self.ids, ctrl.last_spikes)] = now
+        pulse = np.exp(-np.maximum(0, now - self.lit_at) / 0.13)
         pygame.draw.rect(s, CARD, (20, 176, 380, 151), border_radius=8)
         self.text('L', 33, 211, MUTED, self.small)
         self.text('R', 379, 211, MUTED, self.small)
@@ -139,26 +155,11 @@ class BrainPanel:
                 pygame.draw.circle(s, WHITE, (px, py), 6, 1)
                 break
         self.text(caption, 31, 311, MUTED, self.small)
-        drive = ctrl.last_drive if ctrl else np.zeros((2, 2))
-        rates = ctrl.rates if ctrl else np.zeros((2, 2))
-        self.bar('SENSE / TARGET', drive[:, 0], 20, 340, AMBER)
-        self.bar('SENSE / THREAT', drive[:, 1], 224, 340, AMBER)
-        self.bar('DNa02 / STEER Hz', rates[:, 0], 20, 385, CYAN, 25)
-        self.bar('DNp01 / BARK Hz', rates[:, 1], 224, 385, PINK, 25)
-        pygame.draw.rect(s, (20, 48, 49), (20, 439, 380, 28), border_radius=5)
-        action = ctrl.last_action.name.replace('_', ' + ') if ctrl else 'RANDOM'
-        self.text(f'MORTY > {action}', 31, 447, WHITE)
-        return s
 
     def draw(self):
-        original = self._draw_original()
         if self.design == 'original':
-            return original
-        # Keep exactly the same real-spike graph and hover geometry.
-        graph = original.subsurface((20, 176, 380, 151)).copy()
+            return self._draw_original()
         t = THEMES[self.design]
-        if self.design == 'backyard':
-            graph.fill((205,255,161), special_flags=pygame.BLEND_RGB_MULT)
         s = self.surface
         s.fill(t.bg)
         for y in range(0,480,21):
@@ -180,7 +181,7 @@ class BrainPanel:
         ms=round(ctrl.sample_seconds*1000) if ctrl else 0
         self.text(f'SPIKES / {ms} ms',165,143,t.muted,self.small)
         plaque(s,(14,171,392,160),t,fill=t.screen)
-        s.blit(graph,(20,176))
+        self._draw_network()
         # Chunky instrument scales replace the generic dashboard bars.
         drive=ctrl.last_drive if ctrl else np.zeros((2,2))
         rates=ctrl.rates if ctrl else np.zeros((2,2))
